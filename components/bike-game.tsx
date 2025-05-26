@@ -496,10 +496,10 @@ export default function BikeGame() {
             <p className="text-white mb-4 text-center max-w-md font-pixel text-sm">
               La bicicleta está lista, solo tenés que ir a buscarla pero...
               <br />
-              ¡hay un perro y un bondi del 39 en el camino!
+              ¡hay perros y collectivos en el camino!
               <br />
               <br />
-              Esquivá los bondis, no pises a pochi, y agarrá los guantes de boxeo para sumar puntos.
+              Esquivá los bondis del 39, no pises a pochi, y agarrá los guantes de boxeo para sumar puntos.
               <br />
               <br />
               Consegí {VICTORY_SCORE} puntos y obtené tu regalo!
