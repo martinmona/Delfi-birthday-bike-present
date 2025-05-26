@@ -111,13 +111,13 @@ export default function BikeGame() {
     }
     // Load images
     const imageSources = {
-      player1: "/images/player1.png",
-      player2: "/images/player2.png",
-      player3: "/images/player3.png",
-      dog: "/images/dog.png",
-      bus: "/images/bus.png",
-      glove: "/images/glove.png",
-      background: "/images/city-background.png",
+      player1: "images/player1.png",
+      player2: "images/player2.png",
+      player3: "images/player3.png",
+      dog: "images/dog.png",
+      bus: "images/bus.png",
+      glove: "images/glove.png",
+      background: "images/city-background.png",
     }
 
     Object.entries(imageSources).forEach(([key, src]) => {
