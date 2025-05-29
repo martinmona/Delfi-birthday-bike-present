@@ -26,29 +26,28 @@ export default function VictoryScreen({ score }: VictoryScreenProps) {
   }, [])
 
   return (
-    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80">
-      <h2 className="text-4xl font-bold text-yellow-400 mb-4 font-pixel">¡VICTORIA!</h2>
-      <p className="text-white mb-2 font-pixel">Puntuación final: {score}</p>
-      <div className="my-4 relative">
+    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 p-2 sm:p-4">
+      <h2 className="text-xl sm:text-2xl md:text-4xl font-bold text-yellow-400 mb-4 font-pixel">¡VICTORIA!</h2>
+      <p className="text-white mb-2 font-pixel text-sm sm:text-base">Puntuación final: {score}</p>
+      <div className="my-2 sm:my-4 relative">
         <img
           src="/images/bicycle.png"
           alt="Bicicleta"
-          className="w-40 h-40 object-contain"
+          className="w-28 h-28 sm:w-40 sm:h-40 object-contain"
           onError={(e) => {
-            // Si la imagen falla, mostrar un fallback
             const target = e.target as HTMLImageElement
             target.style.display = "none"
             const parent = target.parentElement
             if (parent) {
               const fallback = document.createElement("div")
-              fallback.className = "w-40 h-40 bg-yellow-400 rounded-lg flex items-center justify-center"
+              fallback.className = "w-28 h-28 sm:w-40 sm:h-40 bg-yellow-400 rounded-lg flex items-center justify-center"
               fallback.innerHTML = "🚲"
               parent.appendChild(fallback)
             }
           }}
         />
       </div>
-      <p className="text-white mb-6 text-center max-w-md font-pixel text-sm">
+      <p className="text-white mb-4 sm:mb-6 text-center max-w-[90%] sm:max-w-md font-pixel text-[10px] xs:text-xs sm:text-sm">
         ¡Felicidades, Te ganaste la bicicleta!
         <br />
         <br />
@@ -56,7 +55,7 @@ export default function VictoryScreen({ score }: VictoryScreenProps) {
         <br />
         Te amo mucho godi, que la disfrutes :D
       </p>
-      <Button onClick={() => window.print()} className="bg-green-600 hover:bg-green-700 font-pixel">
+      <Button onClick={() => window.print()} className="bg-green-600 hover:bg-green-700 font-pixel text-xs sm:text-sm px-3 py-2 sm:px-4 sm:py-2">
         Imprimir certificado
       </Button>
     </div>

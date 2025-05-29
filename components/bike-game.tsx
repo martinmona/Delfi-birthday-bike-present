@@ -17,8 +17,8 @@ const OBSTACLE_HEIGHT = 40
 const BUS_WIDTH = 200
 const BUS_HEIGHT = 60
 const COLLECTIBLE_SIZE = 30
-const GRAVITY = 0.3
-const JUMP_FORCE_MIN = 9 // Salto mínimo
+const INITIAL_GRAVITY = 0.3
+const JUMP_FORCE_MIN = 10 // Salto mínimo
 const JUMP_FORCE_MAX = 22  // Salto máximo
 const GAME_SPEED_INITIAL = 4
 const SPEED_INCREMENT = 0.0005
@@ -151,10 +151,11 @@ export default function BikeGame() {
       // Update player
       const player = gameState.player
       player.animationFrame++
+      const currentGravity = INITIAL_GRAVITY + gameState.gameSpeed * 0.001
 
       if (player.isJumping) {
         player.y += player.vy
-        player.vy += GRAVITY
+        player.vy += currentGravity
         player.x += player.vx
         // Check if player landed
         if (player.y >= GAME_HEIGHT - GROUND_HEIGHT - PLAYER_HEIGHT) {
@@ -438,10 +439,35 @@ export default function BikeGame() {
     window.addEventListener("keydown", handleKeyDown)
     window.addEventListener("keyup", handleKeyUp)
 
+    const handleTouchStart = (e: TouchEvent) => {
+      e.preventDefault()
+      if (!gameStateRef.current.player.isJumping && !gameStateRef.current.isChargingJump) {
+        gameStateRef.current.isChargingJump = true
+        gameStateRef.current.jumpStartTime = Date.now()
+      }
+    }
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      e.preventDefault()
+      if (gameStateRef.current.isChargingJump) {
+        const holdTime = Date.now() - gameStateRef.current.jumpStartTime
+        const jumpForce = holdTime < 200 ? JUMP_FORCE_MIN : JUMP_FORCE_MAX
+        gameStateRef.current.player.isJumping = true
+        gameStateRef.current.player.vy = -jumpForce
+        gameStateRef.current.isChargingJump = false
+        gameStateRef.current.jumpStartTime = 0
+      }
+    }
+
+    canvas.addEventListener("touchstart", handleTouchStart, { passive: false })
+    canvas.addEventListener("touchend", handleTouchEnd, { passive: false })
+
     return () => {
       cancelAnimationFrame(animationFrameId)
       window.removeEventListener("keydown", handleKeyDown)
       window.removeEventListener("keyup", handleKeyUp)
+      canvas.removeEventListener("touchstart", handleTouchStart)
+      canvas.removeEventListener("touchend", handleTouchEnd)
     }
   }, [gameStarted, gameOver, victory, toast])
 
@@ -487,24 +513,24 @@ export default function BikeGame() {
           ref={canvasRef}
           width={GAME_WIDTH}
           height={GAME_HEIGHT}
-          className="border-4 border-white rounded-lg shadow-lg"
+          className="border-4 border-white rounded-lg shadow-lg max-w-full h-auto touch-none"
         />
 
         {!gameStarted && !gameOver && !victory && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70">
-            <h2 className="text-3xl font-bold text-white mb-6 font-pixel">¡Aventura en Bicicleta!</h2>
-            <p className="text-white mb-4 text-center max-w-md font-pixel text-sm">
-              La bicicleta está lista, solo tenés que ir a buscarla pero...
-              <br />
-              ¡hay perros y collectivos en el camino!
-              <br />
-              <br />
-              Esquivá los bondis del 39, no pises a pochi, y agarrá los guantes de boxeo para sumar puntos.
-              <br />
-              <br />
-              Consegí {VICTORY_SCORE} puntos y obtené tu regalo!
-            </p>
-            <Button onClick={() => setGameStarted(true)} className="bg-red-600 hover:bg-red-700 font-pixel">
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 p-2 sm:p-4 overflow-y-auto">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-2 sm:mb-4 font-pixel text-center">
+              ¡Aventura en Bicicleta!
+            </h2>
+            <div className="text-white text-center max-w-[90%] sm:max-w-xs md:max-w-sm font-pixel text-[10px] xs:text-xs sm:text-sm space-y-2">
+              <p>La bicicleta está lista, solo tenés que ir a buscarla pero...</p>
+              <p>¡hay perros y collectivos en el camino!</p>
+              <p>Esquivá los bondis del 39, no pises a pochi, y agarrá los guantes de boxeo para sumar puntos.</p>
+              <p>Consegí {VICTORY_SCORE} puntos y obtené tu regalo!</p>
+            </div>
+            <Button
+              onClick={() => setGameStarted(true)}
+              className="bg-red-600 hover:bg-red-700 font-pixel mt-3 sm:mt-4 text-xs sm:text-sm px-3 py-2 sm:px-4 sm:py-2"
+            >
               Empezar
             </Button>
           </div>
@@ -516,8 +542,9 @@ export default function BikeGame() {
 
       {gameStarted && !gameOver && !victory && (
         <div className="mt-4">
-          <p className="text-white text-center mt-2 font-pixel text-xs">
-            Presiona la flecha arriba o mantén la barra espaciadora para saltar.
+          <p className="text-white text-center mt-2 font-pixel text-[10px] xs:text-xs sm:text-sm max-w-[90%] sm:max-w-md">
+            Presiona rápido o mantén la barra espaciadora para diferentes alturas de salto. En móvil, toca y mantén la
+            pantalla.
           </p>
         </div>
       )}
