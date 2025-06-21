@@ -27,7 +27,7 @@ const OBSTACLE_SPAWN_RATE_MAX = 0.015
 const COLLECTIBLE_SPAWN_RATE_INITIAL = 0.002
 const COLLECTIBLE_SPAWN_RATE_MAX = 0.008
 const DIFFICULTY_INCREASE_INTERVAL = 300
-const VICTORY_SCORE = 100
+const VICTORY_SCORE = 50
 const COLLECTIBLE_SCORE = 10
 // Nuevas constantes para control de espaciado
 const MIN_OBSTACLE_DISTANCE = 200 // Distancia mínima entre obstáculos
