@@ -439,6 +439,11 @@ export default function BikeGame() {
         gameStateRef.current.isChargingJump = true
         gameStateRef.current.jumpStartTime = Date.now()
       }
+
+      // Prevenir scroll cuando se presiona espacio
+      if (e.code === 'Space' && gameStarted && !gameOver) {
+        e.preventDefault()
+      }
     }
 
     const handleKeyUp = (e: KeyboardEvent) => {
@@ -526,13 +531,13 @@ export default function BikeGame() {
   }
 
   return (
-    <div className="flex flex-col items-center">
+    <div className="game-container flex flex-col items-center">
       <div className="relative">
         <canvas
           ref={canvasRef}
           width={GAME_WIDTH}
           height={GAME_HEIGHT}
-          className="border-4 border-white rounded-lg shadow-lg max-w-full h-auto touch-none"
+          className="game-canvas border-4 border-white rounded-lg shadow-lg max-w-full h-auto touch-none"
         />
 
         {!gameStarted && !gameOver && (

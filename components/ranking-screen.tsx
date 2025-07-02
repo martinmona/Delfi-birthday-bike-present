@@ -100,12 +100,12 @@ export default function RankingScreen({ score, onRestart }: RankingScreenProps) 
   }
 
   return (
-    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 p-2 sm:p-4 overflow-y-auto">
-      <div className="max-w-md w-full space-y-4 max-h-full overflow-y-auto">
+    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 p-3 sm:p-4 overflow-y-auto">
+      <div className="w-full max-w-sm sm:max-w-md space-y-2 sm:space-y-3 max-h-full overflow-y-auto">
         
         {/* Header */}
         <div className="text-center">
-          <h2 className={`text-xl sm:text-2xl md:text-3xl font-bold mb-2 font-pixel ${
+          <h2 className={`text-base sm:text-lg md:text-xl font-bold mb-2 font-pixel ${
             isTopScore ? 'text-yellow-400' : 'text-red-500'
           }`}>
             {isTopScore ? '¡NUEVO RÉCORD!' : '¡GAME OVER!'}
@@ -115,7 +115,7 @@ export default function RankingScreen({ score, onRestart }: RankingScreenProps) 
           </p>
           
           {score === 0 && (
-            <div className="mb-4">
+            <div className="mb-2">
               <p className="text-orange-400 font-pixel text-xs sm:text-sm">
                 ¡Necesitas al menos 1 punto para guardar tu puntaje!
               </p>
@@ -126,7 +126,7 @@ export default function RankingScreen({ score, onRestart }: RankingScreenProps) 
           )}
           
           {isTopScore && score > 0 && (
-            <div className="mb-4">
+            <div className="mb-2">
               <p className="text-yellow-400 font-pixel text-xs sm:text-sm">
                 ¡Felicidades! ¡Tienes el puntaje más alto!
               </p>
@@ -144,19 +144,19 @@ export default function RankingScreen({ score, onRestart }: RankingScreenProps) 
         </div>
 
         {/* Ranking Table */}
-        <div className="bg-black/50 rounded-lg p-3 max-h-40 overflow-y-auto">
-          <h3 className="text-white font-pixel text-sm mb-2 text-center">🏆 Ranking Global</h3>
+        <div className="bg-black/50 rounded-lg p-2 sm:p-3 max-h-32 sm:max-h-40 overflow-y-auto">
+          <h3 className="text-white font-pixel text-xs sm:text-sm mb-2 text-center">🏆 Ranking Global</h3>
           {loading ? (
             <p className="text-white font-pixel text-xs text-center">Cargando...</p>
           ) : (
             <div className="space-y-1">
-              {rankings.slice(0, 10).map((entry, index) => (
-                <div key={entry.id} className="flex justify-between items-center text-white font-pixel text-[10px] xs:text-xs">
+              {rankings.slice(0, 8).map((entry, index) => (
+                <div key={entry.id} className="flex justify-between items-center text-white font-pixel text-[9px] xs:text-[10px]">
                   <span className="flex items-center">
-                    <span className={`mr-2 ${index === 0 ? 'text-yellow-400' : index === 1 ? 'text-gray-300' : index === 2 ? 'text-orange-400' : ''}`}>
+                    <span className={`mr-1 sm:mr-2 ${index === 0 ? 'text-yellow-400' : index === 1 ? 'text-gray-300' : index === 2 ? 'text-orange-400' : ''}`}>
                       #{index + 1}
                     </span>
-                    <span className="truncate max-w-[120px]">{entry.name}</span>
+                    <span className="truncate max-w-[80px] sm:max-w-[100px]">{entry.name}</span>
                   </span>
                   <span>{entry.score}</span>
                 </div>
@@ -170,21 +170,21 @@ export default function RankingScreen({ score, onRestart }: RankingScreenProps) 
 
         {/* Name Input and Submit */}
         {!hasSubmitted && score > 0 && (
-          <div className="space-y-3">
+          <div className="space-y-2">
             <div>
               <Input
                 placeholder="Ingresa tu nombre"
                 value={playerName}
                 onChange={(e) => setPlayerName(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="font-pixel text-xs sm:text-sm text-white bg-gray-800 border-gray-600 placeholder-gray-400 focus:border-white focus:ring-white"
+                className="font-pixel text-xs sm:text-sm text-white bg-gray-800 border-gray-600 placeholder-gray-400 focus:border-white focus:ring-white h-9 sm:h-10"
                 maxLength={20}
               />
             </div>
             <Button
               onClick={submitScore}
               disabled={!playerName.trim() || isSubmitting}
-              className="w-full bg-green-600 hover:bg-green-700 font-pixel text-xs sm:text-sm px-3 py-2"
+              className="w-full bg-green-600 hover:bg-green-700 font-pixel text-xs sm:text-sm px-3 py-2 h-9 sm:h-10"
             >
               {isSubmitting ? 'Guardando...' : 'Guardar Puntaje'}
             </Button>
@@ -193,11 +193,11 @@ export default function RankingScreen({ score, onRestart }: RankingScreenProps) 
 
         {hasSubmitted && (
           <div className="text-center">
-            <p className="text-green-400 font-pixel text-xs sm:text-sm mb-3">
+            <p className="text-green-400 font-pixel text-xs sm:text-sm mb-2">
               ¡Puntaje guardado exitosamente!
             </p>
             {isTopScore && (
-              <p className="text-yellow-400 font-pixel text-[10px] xs:text-xs mb-3">
+              <p className="text-yellow-400 font-pixel text-[10px] xs:text-xs mb-2">
                 ¡Ya puedes reclamar tu bicicleta! 🚲
               </p>
             )}
@@ -208,14 +208,14 @@ export default function RankingScreen({ score, onRestart }: RankingScreenProps) 
         <div className="text-center">
           <Button
             onClick={onRestart}
-            className="bg-red-600 hover:bg-red-700 font-pixel text-xs sm:text-sm px-3 py-2"
+            className="bg-red-600 hover:bg-red-700 font-pixel text-xs sm:text-sm px-4 py-2 h-9 sm:h-10"
           >
             Jugar de nuevo
           </Button>
         </div>
 
         {/* Instructions */}
-        <p className="text-white text-center font-pixel text-[8px] xs:text-[10px] max-w-[90%] mx-auto">
+        <p className="text-white text-center font-pixel text-[8px] xs:text-[9px] sm:text-[10px] max-w-[95%] mx-auto">
           {score === 0 
             ? "¡Recoge guantes para sumar puntos y poder guardar tu puntaje!" 
             : "¡Sigue intentando para conseguir más puntos y subir en el ranking!"

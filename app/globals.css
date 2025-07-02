@@ -34,3 +34,120 @@
     --radius: 0.5rem;
   }
 }
+
+/* Optimizaciones para móviles */
+@media (max-width: 640px) {
+  body {
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .game-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #1f2937;
+  }
+  
+  .game-canvas {
+    width: 100vw !important;
+    height: 100vh !important;
+    object-fit: contain;
+    border: none !important;
+    border-radius: 0 !important;
+  }
+}
+
+/* Desktop - mantener aspecto ratio */
+@media (min-width: 640px) {
+  .game-canvas {
+    max-width: 700px;
+    height: auto;
+    aspect-ratio: 7/5; /* 700/500 */
+  }
+  
+  .game-container {
+    position: relative;
+    background: transparent;
+  }
+  
+  body {
+    overflow-y: auto;
+  }
+}
+
+/* Prevenir scroll al presionar espacio */
+body {
+  overflow-x: hidden;
+}
+
+/* Estilos para el canvas del juego */
+.game-canvas {
+  touch-action: none;
+}
+
+/* Mobile: Canvas a pantalla completa */
+@media (max-width: 640px) {
+  body {
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .game-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #1f2937;
+  }
+  
+  .game-canvas {
+    width: 100vw !important;
+    height: 100vh !important;
+    object-fit: contain;
+    border: none !important;
+    border-radius: 0 !important;
+  }
+}
+
+/* Desktop: Canvas con tamaño fijo */
+@media (min-width: 640px) {
+  .game-container {
+    position: relative;
+    background: transparent;
+  }
+  
+  .game-canvas {
+    max-width: 700px;
+    height: auto;
+    aspect-ratio: 7/5;
+  }
+  
+  /* Prevenir scroll con espacio en desktop */
+  body {
+    overflow-y: auto;
+  }
+  
+  /* Prevenir scroll de página cuando se presiona espacio */
+  .game-active {
+    overflow: hidden;
+  }
+}
+
+/* Prevenir zoom en inputs en iOS */
+input[type="text"], 
+input[type="search"],
+input[type="number"] {
+  font-size: 16px;
+}
+
+/* Mejorar la experiencia táctil */
+button, 
+.touchable {
+  touch-action: manipulation;
+}
