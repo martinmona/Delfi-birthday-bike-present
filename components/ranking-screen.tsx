@@ -31,7 +31,6 @@ export default function RankingScreen({ score, onRestart }: RankingScreenProps) 
   }, [])
 
   useEffect(() => {
-    // Verificar si es el puntaje más alto y lanzar confeti si es así
     if (rankings.length > 0 && score > rankings[0].score) {
       setIsTopScore(true)
       const launchConfetti = () => {
@@ -55,7 +54,6 @@ export default function RankingScreen({ score, onRestart }: RankingScreenProps) 
         const data = await response.json()
         setRankings(data)
         
-        // Calcular posición del jugador
         const position = data.findIndex((entry: RankingEntry) => score > entry.score)
         setPlayerPosition(position === -1 ? data.length + 1 : position + 1)
       }

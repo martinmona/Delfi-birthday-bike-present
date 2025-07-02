@@ -10,7 +10,6 @@ interface VictoryScreenProps {
 
 export default function VictoryScreen({ score }: VictoryScreenProps) {
   useEffect(() => {
-    // Lanzar confeti cuando se muestre la pantalla de victoria
     const launchConfetti = () => {
       confetti({
         particleCount: 100,

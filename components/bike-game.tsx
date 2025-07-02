@@ -18,8 +18,8 @@ const BUS_WIDTH = 200
 const BUS_HEIGHT = 60
 const COLLECTIBLE_SIZE = 30
 const INITIAL_GRAVITY = 0.3
-const JUMP_FORCE_MIN = 10 // Salto mínimo
-const JUMP_FORCE_MAX = 22  // Salto máximo
+const JUMP_FORCE_MIN = 10
+const JUMP_FORCE_MAX = 22
 const GAME_SPEED_INITIAL = 4
 const SPEED_INCREMENT = 0.0005
 const OBSTACLE_SPAWN_RATE_INITIAL = 0.003
@@ -28,10 +28,9 @@ const COLLECTIBLE_SPAWN_RATE_INITIAL = 0.002
 const COLLECTIBLE_SPAWN_RATE_MAX = 0.008
 const DIFFICULTY_INCREASE_INTERVAL = 300
 const COLLECTIBLE_SCORE = 5
-// Nuevas constantes para control de espaciado
-const MIN_OBSTACLE_DISTANCE = 200 // Distancia mínima entre obstáculos
-const MIN_BUS_DISTANCE = 350 // Distancia mínima entre buses (más grande)
-const SAFE_ZONE_AFTER_BUS = 300 // Zona segura después de un bus
+const MIN_OBSTACLE_DISTANCE = 200
+const MIN_BUS_DISTANCE = 350
+const SAFE_ZONE_AFTER_BUS = 300
 
 const OBSTACLE_TYPES = ["dog", "bus"]
 
@@ -58,12 +57,11 @@ export default function BikeGame() {
     score: 0,
     jumpStartTime: 0,
     isChargingJump: false,
-    lastObstacleX: -MIN_OBSTACLE_DISTANCE, // Posición del último obstáculo
+    lastObstacleX: -MIN_OBSTACLE_DISTANCE,
     lastBusX: -MIN_BUS_DISTANCE, 
   })
 
   const imagesRef = useRef<Record<string, HTMLImageElement>>({})
-    // Función para convertir objetos del juego a GameObjects para colisiones
   const createGameObject = (
     x: number,
     y: number,
@@ -80,10 +78,7 @@ export default function BikeGame() {
     type,
   })
   const getCurrentPlayerImage = (gameState: any) => {
-    // Lista de imágenes del jugador en orden de animación
     const playerImages = ["player1", "player2", "player3"]
-
-    // Calcular qué imagen usar basándose en el frame de animación
     const imageIndex = Math.floor(gameState.player.animationFrame / ANIMATION_SPEED) % playerImages.length
     const imageName = playerImages[imageIndex]
 
@@ -91,39 +86,26 @@ export default function BikeGame() {
   }
   useEffect(() => {
     if (!gameStarted) return
-    // Función para verificar si es seguro spawear un obstáculo
     const canSpawnObstacle = (type: string, gameState: any) => {
       const currentX = GAME_WIDTH
       const lastObstacle = gameState.obstacles[gameState.obstacles.length - 1]
 
-      // Si no hay obstáculos, se puede spawear
       if (!lastObstacle) return true
 
-      // Calcular distancia desde el último obstáculo
       const distanceFromLast = currentX - lastObstacle.x
 
-      // Reglas específicas según el tipo
       if (type === "bus") {
-        // Los buses necesitan más espacio
         if (distanceFromLast < MIN_BUS_DISTANCE) return false
-
-        // No permitir bus después de bus muy cerca
         if (lastObstacle.type === "bus" && distanceFromLast < MIN_BUS_DISTANCE * 1.5) return false
-
-        // Verificar que haya pasado suficiente tiempo desde el último bus
         const distanceFromLastBus = currentX - gameState.lastBusX
         if (distanceFromLastBus < MIN_BUS_DISTANCE) return false
       } else {
-        // Para perros, verificar distancia mínima
         if (distanceFromLast < MIN_OBSTACLE_DISTANCE) return false
-
-        // No permitir perro inmediatamente después de un bus
         if (lastObstacle.type === "bus" && distanceFromLast < SAFE_ZONE_AFTER_BUS) return false
       }
 
       return true
     }
-    // Load images
     const imageSources = {
       player1: "images/player1.png",
       player2: "images/player2.png",
@@ -158,11 +140,9 @@ export default function BikeGame() {
     const gameLoop = () => {
       const gameState = gameStateRef.current
 
-      // Update game state
       gameState.frameCount++
       gameState.gameSpeed += SPEED_INCREMENT
 
-      // Update player
       const player = gameState.player
       player.animationFrame++
       const currentGravity = INITIAL_GRAVITY + gameState.gameSpeed * 0.001
@@ -171,13 +151,11 @@ export default function BikeGame() {
         player.y += player.vy
         player.vy += currentGravity
         player.x += player.vx
-        // Check if player landed
         if (player.y >= GAME_HEIGHT - GROUND_HEIGHT - PLAYER_HEIGHT) {
           player.y = GAME_HEIGHT - GROUND_HEIGHT - PLAYER_HEIGHT
           player.isJumping = false
           player.vy = 0
-          player.vx = 0 // Detener movimiento horizontal al aterrizar
-          // Volver a la posición X original gradualmente
+          player.vx = 0
           if (player.x > 50) {
             player.x = Math.max(50, player.x - 2)
           }
@@ -186,7 +164,6 @@ export default function BikeGame() {
         }
       }
 
-      // Calcular dificultad progresiva basada en el tiempo de juego
       const difficultyLevel = Math.floor(gameState.frameCount / DIFFICULTY_INCREASE_INTERVAL)
       const obstacleSpawnRate = Math.min(OBSTACLE_SPAWN_RATE_INITIAL + difficultyLevel * 0.001, OBSTACLE_SPAWN_RATE_MAX)
       const collectibleSpawnRate = Math.min(
@@ -194,14 +171,10 @@ export default function BikeGame() {
         COLLECTIBLE_SPAWN_RATE_MAX,
       )
 
-      // Spawn obstacles con control de espaciado mejorado
       if (Math.random() < obstacleSpawnRate) {
-        // Seleccionar tipo de obstáculo con probabilidades balanceadas
-        // Hacer que los buses sean menos frecuentes en niveles bajos
-        const busChance = Math.min(0.3 + difficultyLevel * 0.05, 0.5) // Máximo 50% de chance para buses
+        const busChance = Math.min(0.3 + difficultyLevel * 0.05, 0.5)
         const type = Math.random() < busChance ? "bus" : "dog"
 
-        // Verificar si es seguro spawear este tipo de obstáculo
         if (canSpawnObstacle(type, gameState)) {
           gameState.obstacles.push({
             x: GAME_WIDTH,
@@ -209,7 +182,6 @@ export default function BikeGame() {
             type,
           })
 
-          // Actualizar posiciones de referencia
           gameState.lastObstacleX = GAME_WIDTH
           if (type === "bus") {
             gameState.lastBusX = GAME_WIDTH
@@ -217,9 +189,7 @@ export default function BikeGame() {
         }
       }
 
-      // Spawn collectibles con tasa progresiva
       if (Math.random() < collectibleSpawnRate) {
-        // Solo spawear coleccionables si no hay obstáculos muy cerca
         const lastObstacle = gameState.obstacles[gameState.obstacles.length - 1]
         const safeToSpawnCollectible = !lastObstacle || GAME_WIDTH - lastObstacle.x > 150
 
@@ -231,7 +201,6 @@ export default function BikeGame() {
         }
       }
 
-      // Move obstacles
       gameState.obstacles = gameState.obstacles
         .map((obstacle) => ({
           ...obstacle,
@@ -239,7 +208,6 @@ export default function BikeGame() {
         }))
         .filter((obstacle) => obstacle.x > -(obstacle.type === "bus" ? BUS_WIDTH : OBSTACLE_WIDTH))
 
-      // Move collectibles
       gameState.collectibles = gameState.collectibles
         .map((collectible) => ({
           ...collectible,
@@ -249,7 +217,6 @@ export default function BikeGame() {
 
       const playerObject = createGameObject(player.x, player.y, PLAYER_WIDTH, PLAYER_HEIGHT, "player", "player")
 
-       // Check collisions with obstacles usando la librería de colisiones
       for (const obstacle of gameState.obstacles) {
         const obstacleWidth = obstacle.type === "bus" ? BUS_WIDTH : OBSTACLE_WIDTH
         const obstacleHeight = obstacle.type === "bus" ? BUS_HEIGHT : OBSTACLE_HEIGHT
@@ -269,7 +236,6 @@ export default function BikeGame() {
         }
       }
 
-      // Check collisions with collectibles usando la librería de colisiones
       gameState.collectibles = gameState.collectibles.filter((collectible) => {
         const collectibleObject = createGameObject(
           collectible.x,
@@ -295,8 +261,6 @@ export default function BikeGame() {
         return true
       })
 
-      // Draw everything
-      // Background
       if (imagesRef.current.background) {
         const bgWidth = imagesRef.current.background.width
         const bgHeight = imagesRef.current.background.height
@@ -308,33 +272,26 @@ export default function BikeGame() {
         ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT)
       }
 
-      // Ground
       ctx.fillStyle = "#545a74"
       ctx.fillRect(0, GAME_HEIGHT - GROUND_HEIGHT, GAME_WIDTH, GROUND_HEIGHT)
 
-      /// Player con animación
       const currentPlayerImage = getCurrentPlayerImage(gameState)
       if (currentPlayerImage && currentPlayerImage.complete) {
         ctx.drawImage(currentPlayerImage, player.x, player.y, PLAYER_WIDTH, PLAYER_HEIGHT)
       } else {
-        // Fallback: dibujar un rectángulo con animación básica
-        // Cambiar ligeramente el color para simular movimiento
         const animationOffset = Math.sin(player.animationFrame * 0.3) * 5
         ctx.fillStyle = "#545a74"
         ctx.fillRect(player.x, player.y + animationOffset, PLAYER_WIDTH, PLAYER_HEIGHT)
 
-        // Dibujar ruedas de bicicleta con rotación
         const wheelRotation = (player.animationFrame * 0.2) % (Math.PI * 2)
         ctx.fillStyle = "#000000"
 
-        // Rueda trasera
         ctx.save()
         ctx.translate(player.x + 15, player.y + 45 + animationOffset)
         ctx.rotate(wheelRotation)
         ctx.beginPath()
         ctx.arc(0, 0, 10, 0, Math.PI * 2)
         ctx.fill()
-        // Rayos de la rueda
         ctx.strokeStyle = "#333"
         ctx.lineWidth = 2
         ctx.beginPath()
@@ -345,14 +302,12 @@ export default function BikeGame() {
         ctx.stroke()
         ctx.restore()
 
-        // Rueda delantera
         ctx.save()
         ctx.translate(player.x + 45, player.y + 45 + animationOffset)
         ctx.rotate(wheelRotation)
         ctx.beginPath()
         ctx.arc(0, 0, 10, 0, Math.PI * 2)
         ctx.fill()
-        // Rayos de la rueda
         ctx.strokeStyle = "#333"
         ctx.lineWidth = 2
         ctx.beginPath()
@@ -364,31 +319,25 @@ export default function BikeGame() {
         ctx.restore()
       }
 
-      // Obstacles
       for (const obstacle of gameState.obstacles) {
         if (imagesRef.current[obstacle.type] && imagesRef.current[obstacle.type].complete) {
           const height = obstacle.type === "bus" ? BUS_HEIGHT : OBSTACLE_HEIGHT
           const width = obstacle.type === "bus" ? BUS_WIDTH : OBSTACLE_WIDTH
           ctx.drawImage(imagesRef.current[obstacle.type], obstacle.x, obstacle.y, width, height)
         } else {
-          // Fallback: dibujar formas básicas para representar los obstáculos
           if (obstacle.type === "dog") {
-            // Pochi: rectángulo blanco con detalles
             ctx.fillStyle = "#ffffff"
             ctx.fillRect(obstacle.x, obstacle.y, OBSTACLE_WIDTH, OBSTACLE_HEIGHT)
             ctx.fillStyle = "#000000"
-            ctx.fillRect(obstacle.x + OBSTACLE_WIDTH - 10, obstacle.y, 10, 15) // cabeza
-            ctx.fillRect(obstacle.x, obstacle.y + OBSTACLE_HEIGHT - 10, OBSTACLE_WIDTH, 5) // patas
+            ctx.fillRect(obstacle.x + OBSTACLE_WIDTH - 10, obstacle.y, 10, 15)
+            ctx.fillRect(obstacle.x, obstacle.y + OBSTACLE_HEIGHT - 10, OBSTACLE_WIDTH, 5)
           } else {
-            // Bondi del 39: rectángulo azul más grande
             ctx.fillStyle = "#0066ff"
             ctx.fillRect(obstacle.x, obstacle.y, BUS_WIDTH, BUS_HEIGHT)
-            // Ventanas
             ctx.fillStyle = "#ffffff"
             for (let i = 0; i < 6; i++) {
               ctx.fillRect(obstacle.x + 20 + i * 30, obstacle.y + 10, 20, 15)
             }
-            // Número 39
             ctx.fillStyle = "#ffffff"
             ctx.font = "16px monospace"
             ctx.fillText("39", obstacle.x + BUS_WIDTH - 40, obstacle.y + 30)
@@ -396,13 +345,11 @@ export default function BikeGame() {
         }
       }
 
-      // Collectibles
       for (const collectible of gameState.collectibles) {
         if (imagesRef.current.glove && imagesRef.current.glove.complete) {
           ctx.drawImage(imagesRef.current.glove, collectible.x, collectible.y, COLLECTIBLE_SIZE, COLLECTIBLE_SIZE)
         } else {
-          // Fallback: dibujar un guante de boxeo básico
-          ctx.fillStyle = "#ff0000" // rojo para el guante
+          ctx.fillStyle = "#ff0000"
           ctx.beginPath()
           ctx.arc(
             collectible.x + COLLECTIBLE_SIZE / 2,
@@ -412,12 +359,11 @@ export default function BikeGame() {
             Math.PI * 2,
           )
           ctx.fill()
-          ctx.fillStyle = "#aa0000" // rojo más oscuro para detalles
+          ctx.fillStyle = "#aa0000"
           ctx.fillRect(collectible.x + 5, collectible.y + COLLECTIBLE_SIZE - 10, COLLECTIBLE_SIZE - 10, 5)
         }
       }
 
-      // Score y nivel
       ctx.fillStyle = "#ffffff"
       ctx.font = "20px monospace"
       ctx.fillText(`Puntos: ${gameState.score}`, 20, 30)
@@ -440,7 +386,6 @@ export default function BikeGame() {
         gameStateRef.current.jumpStartTime = Date.now()
       }
 
-      // Prevenir scroll cuando se presiona espacio
       if (e.code === 'Space' && gameStarted && !gameOver) {
         e.preventDefault()
       }
@@ -450,7 +395,6 @@ export default function BikeGame() {
       if ((e.code === "Space" || e.code === "ArrowUp") && gameStateRef.current.isChargingJump) {
         const holdTime = Date.now() - gameStateRef.current.jumpStartTime
 
-        // Salto corto si se mantiene menos de 200ms, salto alto si se mantiene más
         const jumpForce = holdTime < 200 ? JUMP_FORCE_MIN : Math.min(JUMP_FORCE_MAX, JUMP_FORCE_MIN + holdTime / 75)
 
         gameStateRef.current.player.isJumping = true
@@ -498,7 +442,6 @@ export default function BikeGame() {
 
   const handleJump = () => {
     if (!gameStateRef.current.player.isJumping && !gameStateRef.current.isChargingJump) {
-      // Para el botón, hacer un salto medio automáticamente
       gameStateRef.current.player.isJumping = true
       gameStateRef.current.player.vy = -(JUMP_FORCE_MIN + JUMP_FORCE_MAX) / 2
       gameStateRef.current.player.vx = gameStateRef.current.gameSpeed * 1.2

@@ -24,14 +24,10 @@ export async function POST(request: NextRequest) {
     
     if (!name || typeof score !== 'number') {
       return NextResponse.json({ error: 'Name and score are required' }, { status: 400 })
-    }
-
-    // Validar que el puntaje sea mayor a 0
+    }    
     if (score <= 0) {
       return NextResponse.json({ error: 'Score must be greater than 0' }, { status: 400 })
-    }
-
-    // Validar longitud del nombre
+    }    
     if (name.length > 50) {
       return NextResponse.json({ error: 'Name too long' }, { status: 400 })
     }
