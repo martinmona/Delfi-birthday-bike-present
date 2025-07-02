@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
-import GameOverScreen from "./game-over-screen"
-import VictoryScreen from "./victory-screen"
+import RankingScreen from "./ranking-screen"
+import { collisionDetector, type GameObject } from "@/lib/collision-detection"
 
 const ANIMATION_SPEED = 8
 const GAME_WIDTH = 700
@@ -27,8 +27,7 @@ const OBSTACLE_SPAWN_RATE_MAX = 0.015
 const COLLECTIBLE_SPAWN_RATE_INITIAL = 0.002
 const COLLECTIBLE_SPAWN_RATE_MAX = 0.008
 const DIFFICULTY_INCREASE_INTERVAL = 300
-const VICTORY_SCORE = 50
-const COLLECTIBLE_SCORE = 10
+const COLLECTIBLE_SCORE = 5
 // Nuevas constantes para control de espaciado
 const MIN_OBSTACLE_DISTANCE = 200 // Distancia mínima entre obstáculos
 const MIN_BUS_DISTANCE = 350 // Distancia mínima entre buses (más grande)
@@ -40,7 +39,6 @@ export default function BikeGame() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [gameStarted, setGameStarted] = useState(false)
   const [gameOver, setGameOver] = useState(false)
-  const [victory, setVictory] = useState(false)
   const [score, setScore] = useState(0)
   const { toast } = useToast()
 
@@ -65,6 +63,22 @@ export default function BikeGame() {
   })
 
   const imagesRef = useRef<Record<string, HTMLImageElement>>({})
+    // Función para convertir objetos del juego a GameObjects para colisiones
+  const createGameObject = (
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    imageKey?: string,
+    type?: string,
+  ): GameObject => ({
+    x,
+    y,
+    width,
+    height,
+    image: imageKey ? imagesRef.current[imageKey] : undefined,
+    type,
+  })
   const getCurrentPlayerImage = (gameState: any) => {
     // Lista de imágenes del jugador en orden de animación
     const playerImages = ["player1", "player2", "player3"]
@@ -233,30 +247,40 @@ export default function BikeGame() {
         }))
         .filter((collectible) => collectible.x > -COLLECTIBLE_SIZE)
 
-      // Check collisions with obstacles
+      const playerObject = createGameObject(player.x, player.y, PLAYER_WIDTH, PLAYER_HEIGHT, "player", "player")
+
+       // Check collisions with obstacles usando la librería de colisiones
       for (const obstacle of gameState.obstacles) {
         const obstacleWidth = obstacle.type === "bus" ? BUS_WIDTH : OBSTACLE_WIDTH
         const obstacleHeight = obstacle.type === "bus" ? BUS_HEIGHT : OBSTACLE_HEIGHT
 
-        if (
-          player.x < obstacle.x + obstacleWidth &&
-          player.x + PLAYER_WIDTH > obstacle.x &&
-          player.y < obstacle.y + obstacleHeight &&
-          player.y + PLAYER_HEIGHT > obstacle.y
-        ) {
+        const obstacleObject = createGameObject(
+          obstacle.x,
+          obstacle.y,
+          obstacleWidth,
+          obstacleHeight,
+          obstacle.type,
+          obstacle.type,
+        )
+
+        if (collisionDetector.detectCollision(playerObject, obstacleObject)) {
           setGameOver(true)
           return
         }
       }
 
-      // Check collisions with collectibles
+      // Check collisions with collectibles usando la librería de colisiones
       gameState.collectibles = gameState.collectibles.filter((collectible) => {
-        if (
-          player.x < collectible.x + COLLECTIBLE_SIZE &&
-          player.x + PLAYER_WIDTH > collectible.x &&
-          player.y < collectible.y + COLLECTIBLE_SIZE &&
-          player.y + PLAYER_HEIGHT > collectible.y
-        ) {
+        const collectibleObject = createGameObject(
+          collectible.x,
+          collectible.y,
+          COLLECTIBLE_SIZE,
+          COLLECTIBLE_SIZE,
+          "glove",
+          "collectible",
+        )
+
+        if (collisionDetector.detectCollision(playerObject, collectibleObject)) {
           gameState.score += COLLECTIBLE_SCORE
           setScore(gameState.score)
 
@@ -265,10 +289,6 @@ export default function BikeGame() {
             description: "¡Buen trabajo!",
             duration: 1000,
           })
-
-          if (gameState.score >= VICTORY_SCORE) {
-            setVictory(true)
-          }
 
           return false
         }
@@ -403,7 +423,7 @@ export default function BikeGame() {
       ctx.fillText(`Puntos: ${gameState.score}`, 20, 30)
       ctx.fillText(`Nivel: ${difficultyLevel + 1}`, 20, 60)
 
-      if (!gameOver && !victory) {
+      if (!gameOver) {
         animationFrameId = requestAnimationFrame(gameLoop)
       }
     }
@@ -469,7 +489,7 @@ export default function BikeGame() {
       canvas.removeEventListener("touchstart", handleTouchStart)
       canvas.removeEventListener("touchend", handleTouchEnd)
     }
-  }, [gameStarted, gameOver, victory, toast])
+  }, [gameStarted, gameOver, toast])
 
   const handleJump = () => {
     if (!gameStateRef.current.player.isJumping && !gameStateRef.current.isChargingJump) {
@@ -502,7 +522,6 @@ export default function BikeGame() {
     }
     setScore(0)
     setGameOver(false)
-    setVictory(false)
     setGameStarted(true)
   }
 
@@ -516,7 +535,7 @@ export default function BikeGame() {
           className="border-4 border-white rounded-lg shadow-lg max-w-full h-auto touch-none"
         />
 
-        {!gameStarted && !gameOver && !victory && (
+        {!gameStarted && !gameOver && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 p-2 sm:p-4 overflow-y-auto">
             <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-2 sm:mb-4 font-pixel text-center">
               ¡Aventura en Bicicleta!
@@ -525,7 +544,7 @@ export default function BikeGame() {
               <p>La bicicleta está lista, solo tenés que ir a buscarla pero...</p>
               <p>¡hay perros y collectivos en el camino!</p>
               <p>Esquivá los bondis del 39, no pises a pochi, y agarrá los guantes de boxeo para sumar puntos.</p>
-              <p>Consegí {VICTORY_SCORE} puntos y obtené tu regalo!</p>
+              <p>¡Consigue la mayor cantidad de puntos posible y sube al ranking global!</p>
             </div>
             <Button
               onClick={() => setGameStarted(true)}
@@ -536,11 +555,10 @@ export default function BikeGame() {
           </div>
         )}
 
-        {gameOver && <GameOverScreen score={score} onRestart={handleRestart} />}
-        {victory && <VictoryScreen score={score} />}
+        {gameOver && <RankingScreen score={score} onRestart={handleRestart} />}
       </div>
 
-      {gameStarted && !gameOver && !victory && (
+      {gameStarted && !gameOver && (
         <div className="mt-4">
           <p className="text-white text-center mt-2 font-pixel text-[10px] xs:text-xs sm:text-sm max-w-[90%] sm:max-w-md">
             Presiona rápido o mantén la barra espaciadora para diferentes alturas de salto. En móvil, toca y mantén la
